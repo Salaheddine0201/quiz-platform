@@ -5,7 +5,7 @@ Il s'agit d'un monorepo avec une séparation stricte entre une API Backend et un
 
 ## Architecture
 
-- **Backend** : API construite avec [Laravel 11](https://laravel.com/) (situé dans le dossier `/backend`). Gère la logique métier, la base de données et l'authentification via Laravel Sanctum (Tokens API).
+- **Backend** : API construite avec [Laravel 12](https://laravel.com/) (situé dans le dossier `/backend`). Gère la logique métier, la base de données et l'authentification via Laravel Sanctum (Tokens API).
 - **Frontend** : Application Client (SPA) construite avec [React](https://react.dev/) et [Vite](https://vitejs.dev/) (situé dans le dossier `/frontend`). Gère l'interface utilisateur.
 
 ---
