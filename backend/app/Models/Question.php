@@ -1,3 +1,5 @@
+<?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -7,7 +9,7 @@ class Question extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['quiz_id', 'question_text', 'points'];
+    protected $fillable = ['text_content', 'points', 'penalty_points', 'quiz_id'];
 
     public function quiz() {
         return $this->belongsTo(Quiz::class);

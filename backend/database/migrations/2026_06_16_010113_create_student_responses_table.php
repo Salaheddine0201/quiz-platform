@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('student_responses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('quiz_assignment_id')->constrained('quiz_assignments')->onDelete('cascade');
+            $table->dateTime('answered_at');
+            $table->foreignId('session_id')->constrained('quiz_sessions')->onDelete('cascade');
             $table->foreignId('question_id')->constrained('questions')->onDelete('cascade');
-            $table->foreignId('chosen_answer_id')->constrained('answers')->onDelete('cascade');
+            $table->foreignId('answer_id')->constrained('answers')->onDelete('cascade');
             $table->timestamps();
         });
     }
