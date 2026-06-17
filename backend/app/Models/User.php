@@ -25,6 +25,25 @@ class User extends Authenticatable
         'password',
         'role',
     ];
+    // Relationship to get a teacher's students
+    public function students() {
+        return $this->belongsToMany(User::class, 'teacher_student', 'teacher_id', 'student_id');
+    }
+    
+    // Relationship to get a student's teachers
+    public function teachers() {
+        return $this->belongsToMany(User::class, 'teacher_student', 'student_id', 'teacher_id');
+    }
+    
+    // Quizzes created by a teacher
+    public function createdQuizzes() {
+        return $this->hasMany(Quiz::class, 'teacher_id');
+    }
+    
+    // Quizzes assigned to a student
+    public function quizAssignments() {
+        return $this->hasMany(QuizAssignment::class, 'student_id');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
@@ -49,3 +68,4 @@ class User extends Authenticatable
         ];
     }
 }
+
