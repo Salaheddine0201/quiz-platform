@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }) => {
         setToken(response.data.token);
         setUser(response.data.user);
         localStorage.setItem('auth_token', response.data.token);
+        return response.data.user;
     };
 
     const register = async (data) => {
@@ -37,6 +38,7 @@ export const AuthProvider = ({ children }) => {
         setToken(response.data.token);
         setUser(response.data.user);
         localStorage.setItem('auth_token', response.data.token);
+        return response.data.user;
     };
 
     const logout = async () => {

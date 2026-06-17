@@ -61,7 +61,8 @@ npm run dev
 - Architecture Monorepo Backend/Frontend séparée.
 - Authentification complète (Login, Register, Logout, Protected Routes) via Laravel Sanctum (API Tokens).
 - Logique de **Rôle** (Enseignant / Étudiant) avec Redirection Dynamique vers les tableaux de bord respectifs.
-- Interface moderne et responsive construite avec **React** et **Tailwind CSS v4**.
+- Interface moderne et responsive construite avec **React**, **Tailwind CSS v4** et **Shadcn UI**.
+- Gestion des formulaires optimisée avec **React Hook Form** et **Zod** pour une validation robuste.
 
 ## Notes de Développement
 - L'URL de l'API est configurée globalement dans `frontend/src/api/axios.js` pointant vers `http://localhost:8000/api`.
