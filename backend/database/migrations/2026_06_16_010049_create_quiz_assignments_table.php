@@ -14,10 +14,8 @@ return new class extends Migration
         Schema::create('quiz_assignments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('quiz_id')->constrained('quizzes')->onDelete('cascade');
-            $table->foreignId('student_id')->constrained('users')->onDelete('cascade');
-            $table->integer('score')->nullable(); // Filled automatically on submission
-            $table->enum('status', ['assigned', 'completed'])->default('assigned');
-            $table->timestamp('completed_at')->nullable();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->unique(['quiz_id', 'user_id']);
             $table->timestamps();
         });
     }

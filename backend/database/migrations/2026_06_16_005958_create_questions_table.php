@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
+            $table->text('text_content');
+            $table->float('points');
+            $table->float('penalty_points')->default(0);
             $table->foreignId('quiz_id')->constrained('quizzes')->onDelete('cascade');
-            $table->text('question_text');
-            $table->integer('points')->default(1); 
             $table->timestamps();
         });
     }

@@ -1,3 +1,5 @@
+<?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -7,17 +9,24 @@ class Quiz extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['teacher_id', 'title', 'description', 'time_limit'];
+    const GRADING_STANDARD = 'standard';
+    const GRADING_CANADIEN = 'canadien';
 
-    public function teacher() {
-        return $this->belongsTo(User::class, 'teacher_id');
+    protected $fillable = ['title', 'description', 'duration_minutes', 'expires_at', 'grading_system', 'user_id'];
+
+    public function user() {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function questions() {
         return $this->hasMany(Question::class);
     }
 
-    public function assignments() {
-        return $this->hasMany(QuizAssignment::class);
+    public function quizSessions() {
+        return $this->hasMany(QuizSession::class);
+    }
+
+    public function assignedUsers() {
+        return $this->belongsToMany(User::class, 'quiz_assignments', 'quiz_id', 'user_id');
     }
 }
