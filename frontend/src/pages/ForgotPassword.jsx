@@ -47,8 +47,11 @@ export default function ForgotPassword() {
 
   return (
     <div className="flex items-center justify-center min-h-[80vh] p-4 bg-background">
-      <Card className="w-full max-w-md shadow-sm border">
-        <CardHeader className="text-center">
+      <Card className="w-full max-w-md shadow-sm border relative">
+        <Link to="/login" className="absolute top-4 left-4 text-muted-foreground hover:text-primary transition-colors">
+          <ArrowLeft className="h-5 w-5" />
+        </Link>
+        <CardHeader className="text-center pt-8">
           <div className="mx-auto mb-4 bg-primary/10 p-3 rounded-full w-14 h-14 flex items-center justify-center text-primary">
             <KeyRound className="h-7 w-7" />
           </div>
@@ -85,25 +88,13 @@ export default function ForgotPassword() {
               </form>
             </Form>
           ) : (
-            <div className="flex justify-center mt-4">
-              <Button asChild variant="outline" className="w-full h-11">
-                <Link to="/login">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Retour à la connexion
-                </Link>
+            <div className="flex justify-center mt-6">
+              <Button onClick={() => setIsSubmitted(false)} variant="outline" className="w-full h-11">
+                Essayer une autre adresse
               </Button>
             </div>
           )}
         </CardContent>
-        
-        {!isSubmitted && (
-          <CardFooter className="flex justify-center border-t p-4 mt-2">
-            <Link to="/login" className="flex items-center text-sm text-muted-foreground hover:text-primary font-medium transition-colors">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour à la connexion
-            </Link>
-          </CardFooter>
-        )}
       </Card>
     </div>
   );
