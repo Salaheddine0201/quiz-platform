@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, User, LogOut, UserCircle } from 'lucide-react';
+import { User, LogOut, UserCircle } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -13,9 +13,7 @@ export default function Layout() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                     <div className="flex justify-between items-center h-16">
                         <Link to="/" className="flex items-center space-x-2.5 group">
-                            <div className="bg-primary/10 p-2 rounded-xl group-hover:bg-primary group-hover:scale-105 transition-all duration-300">
-                                <BookOpen className="h-5 w-5 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
-                            </div>
+                            <img src="/logo.png" alt="QuizMaster" className="h-9 w-9 rounded-xl group-hover:scale-105 transition-transform duration-300" />
                             <span className="font-bold text-xl text-foreground tracking-tight">QuizMaster</span>
                         </Link>
                         <div className="flex items-center">
@@ -49,9 +47,7 @@ export default function Layout() {
             <footer className="bg-muted/30 border-t border-border py-8">
                 <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center space-x-2">
-                        <div className="bg-primary/10 p-1.5 rounded-lg">
-                            <BookOpen className="h-4 w-4 text-primary" />
-                        </div>
+                        <img src="/logo.png" alt="QuizMaster" className="h-7 w-7 rounded-lg" />
                         <span className="font-semibold text-sm text-foreground">QuizMaster</span>
                     </div>
                     <p className="text-sm text-muted-foreground">
