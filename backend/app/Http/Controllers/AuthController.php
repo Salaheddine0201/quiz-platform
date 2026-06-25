@@ -36,9 +36,15 @@ class AuthController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
-        if (! $user || ! Hash::check($validated['password'], $user->password)) {
+        if (! $user) {
             throw ValidationException::withMessages([
-                'email' => ['Les identifiants fournis sont incorrects.'],
+                'email' => ['Cet email n\'existe pas dans notre système.'],
+            ]);
+        }
+
+        if (! Hash::check($validated['password'], $user->password)) {
+            throw ValidationException::withMessages([
+                'password' => ['Le mot de passe est incorrect.'],
             ]);
         }
 
