@@ -57,7 +57,15 @@ export default function Register() {
         navigate('/student-dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur lors de l\'inscription.');
+      if (err.response?.status === 422 && err.response.data?.errors) {
+        const backendErrors = err.response.data.errors;
+        Object.keys(backendErrors).forEach((field) => {
+          const backendMessage = backendErrors[field][0];
+          form.setError(field, { type: 'server', message: backendMessage });
+        });
+      } else {
+        setError(err.response?.data?.message || 'Erreur lors de l\'inscription.');
+      }
     }
   };
 

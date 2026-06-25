@@ -38,7 +38,15 @@ export default function Login() {
         navigate('/student-dashboard');
       }
     } catch (err) {
-      setError('Identifiants incorrects ou erreur serveur.');
+      if (err.response?.status === 422 && err.response.data?.errors) {
+        const backendErrors = err.response.data.errors;
+        Object.keys(backendErrors).forEach((field) => {
+          const backendMessage = backendErrors[field][0];
+          form.setError(field, { type: 'server', message: backendMessage });
+        });
+      } else {
+        setError('Identifiants incorrects ou erreur serveur.');
+      }
     }
   };
 
