@@ -1,47 +1,102 @@
 import React from 'react';
-import { GraduationCap, User, LogIn, UserPlus } from 'lucide-react';
+import { GraduationCap, User, LogIn, UserPlus, Settings, Clock, BarChart, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+
+// Sous-composant pour le principe DRY
+const FeatureCard = ({ icon: Icon, title, description }) => (
+  <Card className="border shadow-sm hover:shadow-md transition-shadow">
+    <CardHeader>
+      <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+        <Icon className="h-6 w-6 text-primary" />
+      </div>
+      <CardTitle>{title}</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <CardDescription>{description}</CardDescription>
+    </CardContent>
+  </Card>
+);
 
 export default function Home() {
     const { user } = useAuth();
 
+    const features = [
+      {
+        icon: Settings,
+        title: "Gestion experte",
+        description: "Création de quiz multicritères avec une flexibilité totale."
+      },
+      {
+        icon: Clock,
+        title: "Temps maîtrisé",
+        description: "Contraintes temporelles précises pour chaque évaluation."
+      },
+      {
+        icon: BarChart,
+        title: "Analytique avancée",
+        description: "Notation automatique et rapports de performance détaillés."
+      },
+      {
+        icon: Zap,
+        title: "Expérience fluide",
+        description: "Interface étudiante intuitive favorisant la concentration."
+      }
+    ];
+
     return (
-        <div className="flex-grow flex flex-col items-center justify-center p-6 text-center">
-            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight">
-                L'apprentissage rendu <span className="text-blue-600">simple</span>
-            </h1>
-            <p className="text-lg text-slate-600 mb-10 max-w-2xl">
-                Une plateforme épurée et moderne pour créer et passer des quiz. Conçue pour les enseignants et les étudiants.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-                {!user && (
-                    <>
-                        <Link to="/login" className="flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition shadow-sm">
-                            <LogIn className="h-5 w-5" />
-                            <span>Connexion</span>
-                        </Link>
-                        <Link to="/register" className="flex items-center justify-center space-x-2 bg-white text-slate-900 border border-slate-200 px-6 py-3 rounded-md font-medium hover:bg-slate-50 transition shadow-sm">
-                            <UserPlus className="h-5 w-5" />
-                            <span>Inscription</span>
-                        </Link>
-                    </>
-                )}
+        <div className="flex-grow bg-background">
+            <div className="container mx-auto px-4 py-16 md:py-24">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    
+                    {/* Hero Section */}
+                    <div className="space-y-8">
+                        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-foreground leading-[1.1]">
+                            L'excellence académique <span className="text-primary block">réinventée.</span>
+                        </h1>
+                        <div className="space-y-4">
+                            <p className="text-lg text-muted-foreground border-l-4 border-primary pl-4 py-1">
+                                Créez, gérez et automatisez vos évaluations avec une précision chirurgicale. Une interface pensée pour les enseignants exigeants.
+                            </p>
+                            <p className="text-base text-muted-foreground border-l-4 border-muted pl-4 py-1">
+                                Offrez à vos étudiants une expérience d'apprentissage interactive, intuitive et moderne, propulsée par des technologies de pointe.
+                            </p>
+                        </div>
+                        
+                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                            {!user ? (
+                                <>
+                                    <Button asChild size="lg" className="w-full sm:w-auto h-12 px-8">
+                                        <Link to="/register">
+                                            Accéder à la plateforme <UserPlus className="ml-2 h-5 w-5" />
+                                        </Link>
+                                    </Button>
+                                    <Button asChild variant="outline" size="lg" className="w-full sm:w-auto h-12 px-8">
+                                        <Link to="/login">
+                                            <LogIn className="mr-2 h-5 w-5" /> Se connecter
+                                        </Link>
+                                    </Button>
+                                </>
+                            ) : (
+                                <Button asChild size="lg" className="w-full sm:w-auto h-12 px-8">
+                                    <Link to={user.role === 'enseignant' ? "/teacher-dashboard" : "/student-dashboard"}>
+                                        {user.role === 'enseignant' ? <GraduationCap className="mr-2 h-5 w-5" /> : <User className="mr-2 h-5 w-5" />}
+                                        Aller à mon Espace
+                                    </Link>
+                                </Button>
+                            )}
+                        </div>
+                    </div>
 
-                {user?.role === 'enseignant' && (
-                    <Link to="/teacher-dashboard" className="flex items-center justify-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition shadow-sm">
-                        <GraduationCap className="h-5 w-5" />
-                        <span>Espace Enseignant</span>
-                    </Link>
-                )}
-
-                {user?.role === 'etudiant' && (
-                    <Link to="/student-dashboard" className="flex items-center justify-center space-x-2 bg-white text-slate-900 border border-slate-200 px-6 py-3 rounded-md font-medium hover:bg-slate-50 transition shadow-sm">
-                        <User className="h-5 w-5" />
-                        <span>Espace Étudiant</span>
-                    </Link>
-                )}
+                    {/* Features Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {features.map((feature, idx) => (
+                            <FeatureCard key={idx} icon={feature.icon} title={feature.title} description={feature.description} />
+                        ))}
+                    </div>
+                </div>
             </div>
         </div>
     );
