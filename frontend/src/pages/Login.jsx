@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { GraduationCap, BookOpen, TrendingUp, MessageSquare, Calendar } from 'lucide-react';
+import { GraduationCap, ClipboardCheck, BarChart3, Timer, Shield } from 'lucide-react';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Adresse email invalide" }),
@@ -106,30 +106,29 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Colonne Décorative (Droite) */}
-      <div className="hidden lg:flex flex-1 bg-primary text-primary-foreground p-12 flex-col justify-center relative overflow-hidden">
-        {/* Décoration en fond (motif de points) */}
+      {/* Colonne Décorative (Droite) — Fonctionnalités réelles */}
+      <div className="hidden lg:flex flex-1 bg-primary text-primary-foreground p-10 flex-col justify-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
         
-        <div className="relative z-10 max-w-lg mx-auto">
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
-            Gérez vos activités académiques sur une plateforme éducative moderne.
+        <div className="relative z-10 max-w-md mx-auto">
+          <h1 className="text-3xl font-extrabold mb-4 leading-tight">
+            Évaluez et progressez sur une plateforme moderne.
           </h1>
-          <p className="text-lg opacity-90 mb-12">
-            Conçue sur mesure pour les étudiants et les enseignants, notre plateforme centralise la gestion scolaire, facilite la communication et optimise l'apprentissage au quotidien.
+          <p className="text-base opacity-90 mb-8">
+            Créez des quiz, passez des évaluations et suivez vos résultats en temps réel.
           </p>
           
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-2 gap-4">
             {[
-              { icon: BookOpen, title: "Ressources", desc: "Consultez vos supports" },
-              { icon: TrendingUp, title: "Progression", desc: "Visualisez votre parcours" },
-              { icon: MessageSquare, title: "Communication", desc: "Échangez avec l'équipe" },
-              { icon: Calendar, title: "Activités", desc: "Événements importants" }
+              { icon: ClipboardCheck, title: "Quiz en ligne", desc: "Créez et passez des évaluations" },
+              { icon: BarChart3, title: "Résultats", desc: "Notes et statistiques détaillées" },
+              { icon: Timer, title: "Temps maîtrisé", desc: "Chronomètre et soumission auto" },
+              { icon: Shield, title: "Sécurisé", desc: "Navigation contrôlée et anti-triche" }
             ].map((item, idx) => (
-              <div key={idx} className="flex flex-col space-y-2 bg-primary-foreground/10 p-5 rounded-xl backdrop-blur-sm">
-                <item.icon className="h-6 w-6 opacity-90 mb-2" />
-                <h3 className="font-semibold text-lg">{item.title}</h3>
-                <p className="text-sm opacity-80">{item.desc}</p>
+              <div key={idx} className="flex flex-col space-y-1.5 bg-primary-foreground/10 p-4 rounded-xl backdrop-blur-sm">
+                <item.icon className="h-5 w-5 opacity-90 mb-1" />
+                <h3 className="font-semibold text-sm">{item.title}</h3>
+                <p className="text-xs opacity-80">{item.desc}</p>
               </div>
             ))}
           </div>
