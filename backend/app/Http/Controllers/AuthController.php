@@ -32,21 +32,12 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request)
     {
+        // La validation (existence de l'email + vérification du mot de passe) 
+        // est désormais ENTIÈREMENT gérée par le LoginRequest !
         $validated = $request->validated();
 
+        // Si on arrive ici, l'utilisateur existe et le mot de passe est garanti correct
         $user = User::where('email', $validated['email'])->first();
-
-        if (! $user) {
-            throw ValidationException::withMessages([
-                'email' => ['Cet email n\'existe pas dans notre système.'],
-            ]);
-        }
-
-        if (! Hash::check($validated['password'], $user->password)) {
-            throw ValidationException::withMessages([
-                'password' => ['Le mot de passe est incorrect.'],
-            ]);
-        }
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

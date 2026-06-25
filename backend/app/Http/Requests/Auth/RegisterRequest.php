@@ -29,4 +29,23 @@ class RegisterRequest extends FormRequest
             'role' => ['required', 'string', 'in:' . User::ROLE_ENSEIGNANT . ',' . User::ROLE_ETUDIANT],
         ];
     }
+
+    /**
+     * Obtenir les messages d'erreur de validation personnalisés.
+     */
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Le nom est obligatoire.',
+            'name.min' => 'Le nom doit contenir au moins 3 caractères.',
+            'email.required' => 'L\'adresse email est obligatoire.',
+            'email.email' => 'L\'adresse email n\'est pas valide.',
+            'email.unique' => 'Cette adresse email est déjà utilisée.',
+            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.min' => 'Le mot de passe doit contenir au moins 8 caractères.',
+            'password.regex' => 'Le mot de passe doit contenir au moins une majuscule et un chiffre.',
+            'password.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
+            'role.in' => 'Le rôle sélectionné n\'est pas valide.',
+        ];
+    }
 }
