@@ -41,6 +41,12 @@ export default function Register() {
     },
   });
 
+  const errorTranslations = {
+    "The email has already been taken.": "Cette adresse email est déjà utilisée.",
+    "These credentials do not match our records.": "Les identifiants sont incorrects.",
+    "The password confirmation does not match.": "La confirmation du mot de passe ne correspond pas.",
+  };
+
   const onSubmit = async (data) => {
     try {
       setError('');
@@ -57,7 +63,16 @@ export default function Register() {
         navigate('/student-dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur lors de l\'inscription.');
+      if (err.response?.status === 422 && err.response.data?.errors) {
+        const backendErrors = err.response.data.errors;
+        Object.keys(backendErrors).forEach((field) => {
+          const originalMessage = backendErrors[field][0];
+          const translatedMessage = errorTranslations[originalMessage] || originalMessage;
+          form.setError(field, { type: 'server', message: translatedMessage });
+        });
+      } else {
+        setError(err.response?.data?.message || 'Erreur lors de l\'inscription.');
+      }
     }
   };
 

@@ -13,11 +13,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Espace Enseignant
     Route::middleware('role:enseignant')->group(function () {
-        // Ajouter ici les routes réservées aux enseignants (ex: CRUD des quiz)
+
     });
 
     // Espace Étudiant
     Route::middleware('role:etudiant')->group(function () {
-        // Ajouter ici les routes réservées aux étudiants (ex: Passer un quiz)
+        
     });
 });

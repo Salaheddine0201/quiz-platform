@@ -28,6 +28,11 @@ export default function Login() {
     },
   });
 
+  const errorTranslations = {
+    "The email has already been taken.": "Cette adresse email est déjà utilisée.",
+    "These credentials do not match our records.": "Les identifiants sont incorrects.",
+  };
+
   const onSubmit = async (data) => {
     try {
       setError('');
@@ -38,7 +43,16 @@ export default function Login() {
         navigate('/student-dashboard');
       }
     } catch (err) {
-      setError('Identifiants incorrects ou erreur serveur.');
+      if (err.response?.status === 422 && err.response.data?.errors) {
+        const backendErrors = err.response.data.errors;
+        Object.keys(backendErrors).forEach((field) => {
+          const originalMessage = backendErrors[field][0];
+          const translatedMessage = errorTranslations[originalMessage] || originalMessage;
+          form.setError(field, { type: 'server', message: translatedMessage });
+        });
+      } else {
+        setError('Identifiants incorrects ou erreur serveur.');
+      }
     }
   };
 
