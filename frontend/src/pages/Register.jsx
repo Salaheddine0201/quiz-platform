@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { GraduationCap, Users, BookOpen, TrendingUp, MessageSquare, Calendar, ArrowRight, ArrowLeft } from 'lucide-react';
 
@@ -187,7 +188,7 @@ export default function Register() {
                           <FormItem>
                             <FormLabel>Mot de passe</FormLabel>
                             <FormControl>
-                              <Input type="password" placeholder="••••••••" {...field} className="bg-muted/50" />
+                              <PasswordInput placeholder="••••••••" {...field} className="bg-muted/50" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -201,7 +202,7 @@ export default function Register() {
                           <FormItem>
                             <FormLabel>Confirmer</FormLabel>
                             <FormControl>
-                              <Input type="password" placeholder="••••••••" {...field} className="bg-muted/50" />
+                              <PasswordInput placeholder="••••••••" {...field} className="bg-muted/50" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { GraduationCap, BookOpen, TrendingUp, MessageSquare, Calendar } from 'lucide-react';
 
@@ -86,7 +87,7 @@ export default function Login() {
                       </Link>
                     </div>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} className="bg-muted/50" />
+                      <PasswordInput placeholder="••••••••" {...field} className="h-11 bg-muted/50" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
