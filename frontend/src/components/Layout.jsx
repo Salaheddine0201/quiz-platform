@@ -1,38 +1,39 @@
 import React from 'react';
-import { BookOpen, User, LogOut, UserCircle } from 'lucide-react';
+import { User, LogOut, UserCircle } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { Button } from '@/components/ui/button';
 
 export default function Layout() {
     const { user, logout } = useAuth();
 
     return (
-        <div className="flex flex-col min-h-screen bg-slate-50">
-            <header className="bg-white border-b border-slate-200">
+        <div className="flex flex-col min-h-screen bg-background">
+            <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
                     <div className="flex justify-between items-center h-16">
-                        <Link to="/" className="flex items-center space-x-2">
-                            <div className="bg-blue-50 p-1.5 rounded-md">
-                                <BookOpen className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <span className="font-bold text-xl text-slate-900">QuizMaster</span>
+                        <Link to="/" className="flex items-center space-x-2.5 group">
+                            <img src="/logo.png" alt="QuizMaster" className="h-9 w-9 rounded-xl group-hover:scale-105 transition-transform duration-300" />
+                            <span className="font-bold text-xl text-foreground tracking-tight">QuizMaster</span>
                         </Link>
                         <div className="flex items-center">
                             {user ? (
-                                <div className="flex items-center space-x-5">
-                                    <Link to="/profile" className="text-slate-500 hover:text-blue-600 transition" title="Profil">
+                                <div className="flex items-center space-x-3">
+                                    <Link to="/profile" className="text-muted-foreground hover:text-primary transition-colors" title="Profil">
                                         <UserCircle className="h-6 w-6" />
                                     </Link>
-                                    <button onClick={logout} className="flex items-center space-x-1 text-sm text-red-600 hover:text-red-700 font-medium transition cursor-pointer">
-                                        <LogOut className="h-4 w-4" />
-                                        <span>Déconnexion</span>
-                                    </button>
+                                    <Button onClick={logout} variant="ghost" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10 cursor-pointer">
+                                        <LogOut className="h-4 w-4 mr-1.5" />
+                                        Déconnexion
+                                    </Button>
                                 </div>
                             ) : (
-                                <Link to="/login" className="flex items-center space-x-2 text-sm text-slate-600 hover:text-slate-900 font-medium transition">
-                                    <User className="h-4 w-4" />
-                                    <span>Connexion</span>
-                                </Link>
+                                <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
+                                    <Link to="/login" className="inline-flex items-center gap-2">
+                                        <User className="h-4 w-4" />
+                                        Connexion
+                                    </Link>
+                                </Button>
                             )}
                         </div>
                     </div>
@@ -43,10 +44,16 @@ export default function Layout() {
                 <Outlet />
             </main>
 
-            <footer className="bg-white border-t border-slate-200 py-6">
-                <p className="text-center text-sm text-slate-500">
-                    © 2026 QuizMaster. Tous droits réservés.
-                </p>
+            <footer className="bg-muted/30 border-t border-border py-8">
+                <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center space-x-2">
+                        <img src="/logo.png" alt="QuizMaster" className="h-7 w-7 rounded-lg" />
+                        <span className="font-semibold text-sm text-foreground">QuizMaster</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                        © 2026 QuizMaster. Tous droits réservés.
+                    </p>
+                </div>
             </footer>
         </div>
     );
