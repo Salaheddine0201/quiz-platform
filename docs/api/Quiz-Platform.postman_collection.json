@@ -1,0 +1,1188 @@
+{
+  "info": {
+    "_postman_id": "eb5bd232-a1ae-4518-812d-27958dd77931",
+    "name": "Quiz Platform API",
+    "description": "Collection Postman pour l'API Quiz Platform (Laravel Sanctum).\n\n## Démarrage rapide\n1. Lancer le backend : `php artisan serve` (http://localhost:8000)\n2. Seed : `php artisan migrate:fresh --seed`\n3. Exécuter **Auth > Login (Enseignant)** ou **Login (Étudiant)** — le token est enregistré automatiquement\n4. Tester les routes Teacher ou Student\n\n## Comptes de test (seeder)\n- Enseignant : prof@quizmaster.com / Password1\n- Étudiant : etudiant@quizmaster.com / Password1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "quiz_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "question_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "answer_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "session_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "student_user_id",
+      "value": "2",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nouvel Utilisateur\",\n  \"email\": \"nouveau@quizmaster.com\",\n  \"password\": \"Password1\",\n  \"password_confirmation\": \"Password1\",\n  \"role\": \"enseignant\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/register"
+            },
+            "description": "Créer un compte. role : `enseignant` ou `etudiant`."
+          }
+        },
+        {
+          "name": "Login (Enseignant)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    if (json.user && json.user.id) {",
+                  "        pm.collectionVariables.set('user_id', json.user.id);",
+                  "    }",
+                  "    pm.test('Token enregistré', () => pm.expect(json.token).to.be.a('string'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"prof@quizmaster.com\",\n  \"password\": \"Password1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login"
+            },
+            "description": "Connexion enseignant. Le token Sanctum est sauvegardé dans la variable `token`."
+          }
+        },
+        {
+          "name": "Login (Étudiant)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    if (json.user && json.user.id) {",
+                  "        pm.collectionVariables.set('user_id', json.user.id);",
+                  "    }",
+                  "    pm.test('Token enregistré', () => pm.expect(json.token).to.be.a('string'));",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"etudiant@quizmaster.com\",\n  \"password\": \"Password1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login"
+            },
+            "description": "Connexion étudiant. Le token Sanctum est sauvegardé dans la variable `token`."
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/user"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/logout"
+            }
+          }
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"prof@quizmaster.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/forgot-password"
+            }
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset-token-from-email\",\n  \"email\": \"prof@quizmaster.com\",\n  \"password\": \"Password1\",\n  \"password_confirmation\": \"Password1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/reset-password"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Teacher",
+      "description": "Routes `/api/teacher/*` — nécessite le rôle `enseignant`. Exécuter **Auth > Login (Enseignant)** d'abord.",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teacher/dashboard"
+            }
+          }
+        },
+        {
+          "name": "Quizzes",
+          "item": [
+            {
+              "name": "List Quizzes",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/quizzes"
+                }
+              }
+            },
+            {
+              "name": "Create Quiz",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const json = pm.response.json();",
+                      "    if (json.quiz && json.quiz.id) {",
+                      "        pm.collectionVariables.set('quiz_id', json.quiz.id);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Mon Quiz Test\",\n  \"description\": \"Quiz créé depuis Postman\",\n  \"duration_minutes\": 30,\n  \"expires_at\": \"2026-12-31T23:59:59\",\n  \"grading_system\": \"standard\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/quizzes"
+                },
+                "description": "grading_system : `standard` ou `canadien`"
+              }
+            },
+            {
+              "name": "Show Quiz",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/quizzes/{{quiz_id}}"
+                }
+              }
+            },
+            {
+              "name": "Update Quiz",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Mon Quiz Modifié\",\n  \"description\": \"Description mise à jour\",\n  \"duration_minutes\": 45,\n  \"grading_system\": \"canadien\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/quizzes/{{quiz_id}}"
+                }
+              }
+            },
+            {
+              "name": "Delete Quiz",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/quizzes/{{quiz_id}}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Questions",
+          "item": [
+            {
+              "name": "Add Question (with answers)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const json = pm.response.json();",
+                      "    if (json.question && json.question.id) {",
+                      "        pm.collectionVariables.set('question_id', json.question.id);",
+                      "    }",
+                      "    if (json.question && json.question.answers && json.question.answers[0]) {",
+                      "        pm.collectionVariables.set('answer_id', json.question.answers[0].id);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text_content\": \"Quelle est la capitale de la France ?\",\n  \"points\": 4,\n  \"penalty_points\": 0,\n  \"answers\": [\n    { \"text_content\": \"Paris\", \"is_correct\": true },\n    { \"text_content\": \"Lyon\", \"is_correct\": false },\n    { \"text_content\": \"Marseille\", \"is_correct\": false },\n    { \"text_content\": \"Bordeaux\", \"is_correct\": false }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/quizzes/{{quiz_id}}/questions"
+                }
+              }
+            },
+            {
+              "name": "Update Question",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text_content\": \"Quelle est la capitale de la France ? (modifiée)\",\n  \"points\": 5,\n  \"penalty_points\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/questions/{{question_id}}"
+                }
+              }
+            },
+            {
+              "name": "Delete Question",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/questions/{{question_id}}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Answers",
+          "item": [
+            {
+              "name": "Add Answer",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const json = pm.response.json();",
+                      "    if (json.answer && json.answer.id) {",
+                      "        pm.collectionVariables.set('answer_id', json.answer.id);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text_content\": \"Nice\",\n  \"is_correct\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/questions/{{question_id}}/answers"
+                }
+              }
+            },
+            {
+              "name": "Update Answer",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text_content\": \"Paris (capitale)\",\n  \"is_correct\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/answers/{{answer_id}}"
+                }
+              }
+            },
+            {
+              "name": "Delete Answer",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/answers/{{answer_id}}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Assignments",
+          "item": [
+            {
+              "name": "List Assignments",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/quizzes/{{quiz_id}}/assignments"
+                }
+              }
+            },
+            {
+              "name": "Assign Students",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"user_ids\": [{{student_user_id}}]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/quizzes/{{quiz_id}}/assignments"
+                },
+                "description": "Le quiz doit avoir au moins une question. student_user_id = 2 par défaut (étudiant du seeder)."
+              }
+            },
+            {
+              "name": "Unassign Student",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/quizzes/{{quiz_id}}/assignments/{{student_user_id}}"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search Students",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teacher/students?search=sophie&quiz_id={{quiz_id}}",
+              "path": [
+                "teacher",
+                "students"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "sophie",
+                  "description": "Filtre par nom ou email"
+                },
+                {
+                  "key": "quiz_id",
+                  "value": "{{quiz_id}}",
+                  "description": "Exclut les étudiants déjà assignés"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sessions (Results)",
+          "item": [
+            {
+              "name": "List Quiz Sessions",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/quizzes/{{quiz_id}}/sessions"
+                }
+              }
+            },
+            {
+              "name": "Show Session Detail",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/teacher/quizzes/{{quiz_id}}/sessions/{{session_id}}"
+                },
+                "description": "Quiz Histoire (id=3) a une session terminée (id=1) après le seed."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Student",
+      "description": "Routes `/api/student/*` — nécessite le rôle `etudiant`. Exécuter **Auth > Login (Étudiant)** d'abord.",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/student/dashboard"
+            }
+          }
+        },
+        {
+          "name": "Quiz",
+          "item": [
+            {
+              "name": "Show Quiz",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/student/quizzes/{{quiz_id}}"
+                }
+              }
+            },
+            {
+              "name": "Start Quiz",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200 || pm.response.code === 201) {",
+                      "    const json = pm.response.json();",
+                      "    if (json.session_id) {",
+                      "        pm.collectionVariables.set('session_id', json.session_id);",
+                      "    }",
+                      "    if (json.current_question_id) {",
+                      "        pm.collectionVariables.set('question_id', json.current_question_id);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/student/quizzes/{{quiz_id}}/start"
+                }
+              }
+            },
+            {
+              "name": "Get Question",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/student/sessions/{{session_id}}/questions/{{question_id}}"
+                }
+              }
+            },
+            {
+              "name": "Submit Answer",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    const json = pm.response.json();",
+                      "    if (json.next_question_id) {",
+                      "        pm.collectionVariables.set('question_id', json.next_question_id);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"answer_id\": {{answer_id}}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/student/sessions/{{session_id}}/questions/{{question_id}}/answer"
+                },
+                "description": "Récupérer answer_id depuis Get Question (les réponses n'incluent pas is_correct)."
+              }
+            },
+            {
+              "name": "Finish Quiz",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/student/sessions/{{session_id}}/finish"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Results",
+          "item": [
+            {
+              "name": "List Results",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/student/results"
+                }
+              }
+            },
+            {
+              "name": "Show Result",
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/student/results/{{session_id}}"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
