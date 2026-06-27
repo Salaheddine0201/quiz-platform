@@ -10,6 +10,9 @@ import ResetPassword from './pages/ResetPassword';
 import StudentDashboard from './pages/StudentDashboard';
 import TeacherDashboard from './pages/TeacherDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import StudentLayout from './components/student/StudentLayout';
+import QuizPlayer from './pages/student/QuizPlayer';
+import ResultsList from './pages/student/ResultsList';
 
 function App() {
   return (
@@ -23,14 +26,6 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route 
-              path="/student-dashboard" 
-              element={
-                <ProtectedRoute allowedRoles={['etudiant']}>
-                  <StudentDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
               path="/teacher-dashboard" 
               element={
                 <ProtectedRoute allowedRoles={['enseignant']}>
@@ -40,8 +35,42 @@ function App() {
             />
             {/* Fallback */}
             <Route path="/dashboard" element={<Navigate to="/" replace />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
+
+          {/* Student Routes */}
+          <Route element={<StudentLayout />}>
+            <Route 
+              path="/student-dashboard" 
+              element={
+                <ProtectedRoute allowedRoles={['etudiant']}>
+                  <StudentDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/student/dashboard" 
+              element={<Navigate to="/student-dashboard" replace />} 
+            />
+            <Route 
+              path="/student/results" 
+              element={
+                <ProtectedRoute allowedRoles={['etudiant']}>
+                  <ResultsList />
+                </ProtectedRoute>
+              } 
+            />
+          </Route>
+
+          <Route 
+            path="/student/quiz/:id" 
+            element={
+              <ProtectedRoute allowedRoles={['etudiant']}>
+                <QuizPlayer />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </AuthProvider>
