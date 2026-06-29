@@ -44,5 +44,25 @@ Ce document récapitule toutes les modifications apportées localement sur l'app
 ## ⚙️ Configuration
 - **`App.jsx`** : Mise à jour du routeur pour brancher le sous-domaine `/student/*` et rediriger l'étudiant vers le dashboard au lieu du panneau enseignant.
 
+## 🛠️ Corrections & Améliorations Récentes (Frontend)
+
+1. **Correction du Calcul des Notes (Synchronisation Backend-Frontend)**
+   - Correction du bug d'affichage sur la page de fin de quiz (`QuizPlayer.jsx`) qui affichait "0.0/20". Le Frontend appelle désormais `getResultDetails` (via `useQuizSession.js`) pour afficher le score exact calculé par le Backend, prenant en charge les spécificités des barèmes (comme les pénalités du système canadien).
+   - L'affichage de la note (`score_on_20`) est désormais unifié sur la page de fin, dans l'Historique, et sur le Graphique d'évolution du Dashboard.
+
+2. **Refonte de l'Historique du Dashboard (`StudentDashboard.jsx`)**
+   - Le tableau des 5 résultats récents a été mis à niveau avec des fonctionnalités avancées (directement en ligne, sans duplication de fichiers externes).
+   - Ajout d'une **barre de recherche** dynamique.
+   - Ajout du **tri interactif** sur toutes les colonnes (Quiz, Matière, Date, Note, Résultat).
+   - Intégration native de l'ouverture du **Drawer de détails** au clic sur une évaluation.
+
+3. **Design & UX du Dashboard**
+   - **Message de motivation** : Suppression des émojis au profit d'un design professionnel et minimaliste (badge en `bg-muted/40` avec un point lumineux en micro-animation de pulsation).
+
+4. **Amélioration UX du Tiroir de Détails (`ResultDetailsDrawer.jsx`)**
+   - Ajout d'un **bandeau d'indication de défilement flottant** pour inviter l'utilisateur à voir le détail de ses questions.
+   - Construit en position absolue par-dessus le Footer avec un dégradé élégant, il empêche le texte d'être perdu sous le pli de l'écran.
+   - Une fois que l'utilisateur entame son défilement (`onScroll` > 20px), l'indicateur disparaît automatiquement et silencieusement.
+
 ---
-**Note Git :** Ces fichiers sont actuellement "Modified" (pour `App.jsx`) ou "Untracked" (pour tous les nouveaux fichiers du dossier étudiant) dans votre arbre de travail local. Ils sont prêts à être *commit* et *push*.
+**Note Git :** Ces fichiers sont actuellement "Modified" (pour `App.jsx`, `StudentDashboard.jsx`, `ResultsList.jsx`, etc.) ou "Untracked" (pour tous les nouveaux fichiers du dossier étudiant) dans votre arbre de travail local. Ils sont prêts à être *commit* et *push*.
