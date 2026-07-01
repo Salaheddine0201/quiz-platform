@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { studentQuizApi } from '../../api/studentService';
+import { studentQuizApi, studentResultApi } from '../../api/studentService';
 
 export function useQuizSession(quizId) {
     const [quizDetails, setQuizDetails] = useState(null);
@@ -23,7 +23,8 @@ export function useQuizSession(quizId) {
             // Start or resume session
             const startData = await studentQuizApi.startQuiz(quizId);
             if (startData.auto_submitted) {
-                setFinalResult(startData);
+                const resultDetails = await studentResultApi.getResultDetails(startData.session_id);
+                setFinalResult(resultDetails);
                 setStatus('finished');
                 return;
             }
@@ -45,7 +46,8 @@ export function useQuizSession(quizId) {
         try {
             const data = await studentQuizApi.getQuestion(sessionId, questionId);
             if (data.auto_submitted) {
-                setFinalResult(data);
+                const resultDetails = await studentResultApi.getResultDetails(data.session_id);
+                setFinalResult(resultDetails);
                 setStatus('finished');
                 return;
             }
@@ -72,7 +74,8 @@ export function useQuizSession(quizId) {
             );
 
             if (data.auto_submitted || data.is_last) {
-                setFinalResult(data);
+                const resultDetails = await studentResultApi.getResultDetails(data.session_id);
+                setFinalResult(resultDetails);
                 setStatus('finished');
             } else {
                 await loadQuestion(sessionData.session_id, data.next_question_id);
@@ -89,7 +92,8 @@ export function useQuizSession(quizId) {
         try {
             setStatus('submitting');
             const data = await studentQuizApi.finishQuiz(sessionData.session_id);
-            setFinalResult(data);
+            const resultDetails = await studentResultApi.getResultDetails(data.session_id);
+            setFinalResult(resultDetails);
             setStatus('finished');
         } catch (err) {
             setError(err.response?.data?.message || 'Erreur lors de la clôture du quiz.');

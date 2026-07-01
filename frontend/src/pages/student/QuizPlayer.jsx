@@ -3,8 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuizSession } from '../../hooks/student/useQuizSession';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Clock, XCircle, CheckCircle2 } from 'lucide-react';
-import { FileText } from "lucide-react";
+import { Clock, XCircle, CheckCircle2, FileText, GraduationCap } from 'lucide-react';
 export default function QuizPlayer() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -27,10 +26,8 @@ export default function QuizPlayer() {
 
     useEffect(() => {
         if (status === 'finished' && finalResult) {
-            const targetScore = finalResult.total_questions > 0 
-                ? (finalResult.correct / finalResult.total_questions) * 20
-                : 0;
-            
+            const targetScore = finalResult.score_on_20 ?? 0;
+
             let startTimestamp = null;
             const duration = 2000; // 2 seconds counter
 
@@ -106,20 +103,15 @@ export default function QuizPlayer() {
     }
 
     if (status === 'finished' && finalResult) {
-        const calculatedScoreOn20 = finalResult.total_questions > 0 
-            ? ((finalResult.correct / finalResult.total_questions) * 20) 
-            : 0;
-        
-        const isPassed = calculatedScoreOn20 >= 10;
-        const percentage = finalResult.total_questions > 0 
-            ? Math.round((finalResult.correct / finalResult.total_questions) * 100) 
-            : 0;
+        const calculatedScoreOn20 = finalResult.score_on_20 ?? 0;
+        const isPassed = finalResult.result === 'Réussi';
+        const percentage = finalResult.percentage ?? 0;
 
         return (
             <div className="h-[calc(100vh-4rem)] w-full bg-background p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center animate-in fade-in duration-500">
-                <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-                    
-                    {/* Left Panel: Score */}
+                <div className="max-w-md w-full flex flex-col gap-6">
+
+                    {/* Score Panel */}
                     <Card className="shadow-sm border-border bg-card p-8 sm:p-10 flex flex-col items-center justify-center relative overflow-hidden">
                         <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm ${isPassed ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
                             {isPassed ? <CheckCircle2 className="w-10 h-10" /> : <XCircle className="w-10 h-10" />}
@@ -128,15 +120,15 @@ export default function QuizPlayer() {
                         <p className="text-muted-foreground text-center mb-10 font-medium">
                             {isPassed ? 'Félicitations, vous avez réussi !' : 'N\'abandonnez pas, la persévérance paie.'}
                         </p>
-                        
+
                         <div className="relative flex items-center justify-center mb-2">
                             <svg className="w-48 h-48 transform -rotate-90">
                                 <circle cx="96" cy="96" r="88" className="stroke-muted/30" strokeWidth="12" fill="none" />
-                                <circle 
-                                    cx="96" cy="96" r="88" 
+                                <circle
+                                    cx="96" cy="96" r="88"
                                     className={`transition-all duration-[2000ms] ease-out ${isPassed ? 'stroke-success' : 'stroke-destructive'}`}
-                                    strokeWidth="12" 
-                                    fill="none" 
+                                    strokeWidth="12"
+                                    fill="none"
                                     strokeLinecap="round"
                                     strokeDasharray={2 * Math.PI * 88}
                                     strokeDashoffset={2 * Math.PI * 88 * (1 - (animatedScore / 20))}
@@ -151,31 +143,13 @@ export default function QuizPlayer() {
                         </div>
                     </Card>
 
-                    {/* Right Panel: Stats & Actions Bento Box */}
-                    <div className="flex flex-col gap-6 justify-between">
-                        <div className="grid grid-cols-2 gap-4">
-                            <Card className="shadow-sm border-border bg-card p-6 flex flex-col items-start justify-center hover:shadow-md transition-shadow">
-                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Bonnes</span>
-                                <span className="text-4xl font-black text-success">{finalResult.correct}</span>
-                            </Card>
-                            <Card className="shadow-sm border-border bg-card p-6 flex flex-col items-start justify-center hover:shadow-md transition-shadow">
-                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Mauvaises</span>
-                                <span className="text-4xl font-black text-destructive">{finalResult.incorrect}</span>
-                            </Card>
-                            <Card className="shadow-sm border-border bg-card p-6 flex flex-col items-start justify-center col-span-2 hover:shadow-md transition-shadow">
-                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Total des questions</span>
-                                <span className="text-4xl font-black text-foreground">{finalResult.total_questions}</span>
-                            </Card>
-                        </div>
-                        
-                        <Button 
-                            size="lg" 
-                            className="w-full h-16 rounded-xl text-lg font-bold shadow-sm mt-auto" 
-                            onClick={() => navigate('/student/dashboard')}
-                        >
-                            Retour au tableau de bord
-                        </Button>
-                    </div>
+                    <Button
+                        size="lg"
+                        className="w-full h-16 rounded-xl text-lg font-bold shadow-sm"
+                        onClick={() => navigate('/student/dashboard')}
+                    >
+                        Retour au tableau de bord
+                    </Button>
                 </div>
             </div>
         );
@@ -196,11 +170,9 @@ export default function QuizPlayer() {
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2 group cursor-pointer" onClick={() => navigate('/student/dashboard')}>
                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold shrink-0 group-hover:scale-105 transition-transform">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4" strokeWidth="2">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-                            </svg>
+                            <GraduationCap className="w-5 h-5" />
                         </div>
-                        <span className="font-bold text-foreground">PT58 Quiz</span>
+                        <span className="font-bold text-foreground">Portail Scolaire</span>
                     </div>
                     <div className="h-8 w-px bg-border mx-2 hidden sm:block"></div>
                     <div className="hidden sm:block">
@@ -230,7 +202,7 @@ export default function QuizPlayer() {
             </header>
 
             <div className="flex-1 max-w-7xl mx-auto w-full p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6">
-                
+
                 {/* Main Question Area */}
                 <div key={currentQuestion.id} className="flex-1 flex flex-col animate-in slide-in-from-right fade-in duration-300">
                     <div className="bg-primary rounded-t-2xl p-6 sm:p-8 text-primary-foreground">
@@ -246,25 +218,23 @@ export default function QuizPlayer() {
                             {currentQuestion.text_content}
                         </h2>
                     </div>
-                    
+
                     <div className="bg-card border border-t-0 border-border rounded-b-2xl p-6 sm:p-8 shadow-sm flex-1 flex flex-col">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                             {currentQuestion.answers.map((answer, index) => {
                                 const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
                                 const isSelected = selectedAnswerId === answer.id;
                                 return (
-                                    <div 
+                                    <div
                                         key={answer.id}
                                         onClick={() => setSelectedAnswerId(answer.id)}
-                                        className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${
-                                            isSelected 
-                                                ? 'border-primary ring-1 ring-primary bg-primary/5' 
+                                        className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${isSelected
+                                                ? 'border-primary ring-1 ring-primary bg-primary/5'
                                                 : 'border-border hover:border-primary/50 hover:bg-muted/30'
-                                        }`}
+                                            }`}
                                     >
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 mr-4 transition-colors ${
-                                            isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                                        }`}>
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 mr-4 transition-colors ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                                            }`}>
                                             {letters[index] || index + 1}
                                         </div>
                                         <p className="font-medium text-foreground">{answer.text_content}</p>
@@ -273,8 +243,8 @@ export default function QuizPlayer() {
                             })}
                         </div>
                         <div className="mt-auto flex justify-end">
-                            <Button 
-                                size="lg" 
+                            <Button
+                                size="lg"
                                 className="px-8 bg-primary/90 hover:bg-primary text-primary-foreground font-semibold rounded-xl text-base"
                                 disabled={selectedAnswerId === null || status === 'submitting'}
                                 onClick={() => {
@@ -356,8 +326,8 @@ export default function QuizPlayer() {
                             <Button variant="outline" onClick={() => setShowConfirmModal(false)} disabled={status === 'submitting'}>
                                 Annuler
                             </Button>
-                            <Button 
-                                className="bg-primary text-primary-foreground" 
+                            <Button
+                                className="bg-primary text-primary-foreground"
                                 onClick={() => {
                                     setShowConfirmModal(false);
                                     handleAnswerSubmit();
