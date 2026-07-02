@@ -49,6 +49,7 @@ class DashboardController extends Controller
             'title' => $quiz->title,
             'description' => $quiz->description,
             'duration_minutes' => $quiz->duration_minutes,
+            'starts_at' => $quiz->starts_at,
             'expires_at' => $quiz->expires_at,
             'grading_system' => $quiz->grading_system,
             'questions_count' => $quiz->questions_count,

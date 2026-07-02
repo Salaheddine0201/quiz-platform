@@ -1,16 +1,25 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
+import CharacterCount from '@tiptap/extension-character-count';
+import LinkExtension from '@tiptap/extension-link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
 import {
     teacherQuizApi, teacherQuestionApi, teacherAssignmentApi, teacherStudentApi,
 } from '@/api/teacherService';
 import {
     ArrowLeft, Plus, Trash2, Save, Check, ChevronRight, ChevronLeft,
-    ChevronsRight, ChevronsLeft, CircleCheck, CircleAlert,
+    ChevronsRight, ChevronsLeft, CircleCheck, CircleAlert, Bold, Italic, 
+    Underline as UnderlineIcon, Strikethrough, Code, AlignLeft, AlignCenter, 
+    AlignRight, Link as LinkIcon, Undo, Redo, Eraser,
 } from 'lucide-react';
 
 let uid = 0;
@@ -43,10 +52,12 @@ export default function QuizEditor() {
         title: '',
         description: '',
         duration_minutes: 30,
+        starts_at: '',
         expires_at: '',
         grading_system: 'standard',
     });
     const [questions, setQuestions] = useState([emptyQuestion()]);
+    const [numQuestions, setNumQuestions] = useState(1);
     const [deletedQuestionIds, setDeletedQuestionIds] = useState([]);
 
     const [available, setAvailable] = useState([]);
@@ -78,6 +89,7 @@ export default function QuizEditor() {
                         title: quiz.title ?? '',
                         description: quiz.description ?? '',
                         duration_minutes: quiz.duration_minutes ?? 30,
+                        starts_at: quiz.starts_at ? String(quiz.starts_at).slice(0, 16) : '',
                         expires_at: quiz.expires_at ? String(quiz.expires_at).slice(0, 16) : '',
                         grading_system: quiz.grading_system ?? 'standard',
                     });
@@ -96,6 +108,7 @@ export default function QuizEditor() {
                     const assignedStudents = assignRes.assignments ?? [];
                     setAssigned(assignedStudents);
                     setOriginalAssignedIds(assignedStudents.map((s) => s.id));
+                    setNumQuestions((quiz.questions ?? []).length || 1);
                 }
             } catch (err) {
                 console.error(err);
@@ -111,13 +124,32 @@ export default function QuizEditor() {
     const setMetaField = (field, value) => setMeta((m) => ({ ...m, [field]: value }));
 
     /* -------- Questions -------- */
-    const addQuestion = () => setQuestions((qs) => [...qs, emptyQuestion()]);
+    const addQuestion = () => {
+        setQuestions((qs) => [...qs, emptyQuestion()]);
+        setNumQuestions((n) => n + 1);
+    };
+
+    const handleNumQuestionsChange = (e) => {
+        const val = parseInt(e.target.value, 10);
+        if (isNaN(val) || val < 1) return;
+        setNumQuestions(val);
+        setQuestions((qs) => {
+            if (val > qs.length) {
+                const diff = val - qs.length;
+                const newQs = Array.from({ length: diff }, () => emptyQuestion());
+                return [...qs, ...newQs];
+            }
+            return qs;
+        });
+    };
 
     const removeQuestion = (localId) => {
         setQuestions((qs) => {
             const target = qs.find((q) => q.localId === localId);
             if (target?.serverId) setDeletedQuestionIds((ids) => [...ids, target.serverId]);
-            return qs.filter((q) => q.localId !== localId);
+            const newQs = qs.filter((q) => q.localId !== localId);
+            setNumQuestions(newQs.length);
+            return newQs;
         });
     };
 
@@ -136,7 +168,7 @@ export default function QuizEditor() {
         setQuestions((qs) => qs.map((q) => (
             q.localId !== qLocalId ? q : {
                 ...q,
-                answers: q.answers.map((a) => ({ ...a, is_correct: a.localId === aLocalId })),
+                answers: q.answers.map((a) => (a.localId === aLocalId ? { ...a, is_correct: !a.is_correct } : a)),
             }
         )));
 
@@ -195,6 +227,7 @@ export default function QuizEditor() {
                 title: meta.title.trim(),
                 description: meta.description?.trim() || null,
                 duration_minutes: meta.duration_minutes ? Number(meta.duration_minutes) : null,
+                starts_at: meta.starts_at || null,
                 expires_at: meta.expires_at || null,
                 grading_system: meta.grading_system,
             };
@@ -277,6 +310,24 @@ export default function QuizEditor() {
                                 <Label className="mb-1.5 block">Titre</Label>
                                 <Input value={meta.title} onChange={(e) => setMetaField('title', e.target.value)} placeholder="Évaluation de Mathématiques…" />
                             </div>
+                                <div className="space-y-1.5">
+                                    <Label>Date de début</Label>
+                                    <Input
+                                        type="datetime-local"
+                                        value={meta.starts_at}
+                                        onChange={(e) => setMetaField('starts_at', e.target.value)}
+                                        className="h-9"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label>Date de clôture</Label>
+                                    <Input
+                                        type="datetime-local"
+                                        value={meta.expires_at}
+                                        onChange={(e) => setMetaField('expires_at', e.target.value)}
+                                        className="h-9"
+                                    />
+                                </div>
                             <div>
                                 <Label className="mb-1.5 block">Description</Label>
                                 <textarea
@@ -383,9 +434,10 @@ export default function QuizEditor() {
                                 {questions.filter(isQuestionComplete).length} complète(s) · {questions.filter((q) => !isQuestionComplete(q)).length} à remplir
                             </p>
                         </div>
-                        <Button variant="outline" className="gap-2" onClick={addQuestion}>
-                            <Plus className="w-4 h-4" /> Ajouter une question
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Label>Nombre souhaité :</Label>
+                            <Input type="number" min="1" max="50" className="w-20" value={numQuestions} onChange={handleNumQuestionsChange} />
+                        </div>
                     </div>
 
                     <div className="space-y-4">
@@ -394,6 +446,7 @@ export default function QuizEditor() {
                                 key={q.localId}
                                 index={idx}
                                 question={q}
+                                gradingSystem={meta.grading_system}
                                 onRemove={() => removeQuestion(q.localId)}
                                 onUpdate={(patch) => updateQuestion(q.localId, patch)}
                                 onUpdateAnswer={(aId, patch) => updateAnswer(q.localId, aId, patch)}
@@ -403,6 +456,10 @@ export default function QuizEditor() {
                             />
                         ))}
                     </div>
+
+                    <Button variant="outline" className="gap-2 w-full mt-4" onClick={addQuestion}>
+                        <Plus className="w-4 h-4" /> Ajouter une question
+                    </Button>
                 </div>
             </div>
         </div>
@@ -459,7 +516,7 @@ function StudentList({ list, onPick, action, empty = 'Aucun étudiant' }) {
     );
 }
 
-function QuestionCard({ index, question, onRemove, onUpdate, onUpdateAnswer, onSetCorrect, onAddAnswer, onRemoveAnswer }) {
+function QuestionCard({ index, question, gradingSystem, onRemove, onUpdate, onUpdateAnswer, onSetCorrect, onAddAnswer, onRemoveAnswer }) {
     const complete = isQuestionComplete(question);
     const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
 
@@ -480,11 +537,9 @@ function QuestionCard({ index, question, onRemove, onUpdate, onUpdateAnswer, onS
 
                 <div>
                     <Label className="mb-1.5 block">Énoncé de la question</Label>
-                    <textarea
-                        value={question.text_content}
-                        onChange={(e) => onUpdate({ text_content: e.target.value })}
-                        rows={2}
-                        className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none"
+                    <RichTextEditor 
+                        content={question.text_content} 
+                        onChange={(content) => onUpdate({ text_content: content })} 
                         placeholder="Saisissez l'énoncé…"
                     />
                 </div>
@@ -494,10 +549,12 @@ function QuestionCard({ index, question, onRemove, onUpdate, onUpdateAnswer, onS
                         <Label className="mb-1.5 block">Points</Label>
                         <Input type="number" min="0.5" max="100" step="0.5" value={question.points} onChange={(e) => onUpdate({ points: e.target.value })} />
                     </div>
-                    <div>
-                        <Label className="mb-1.5 block">Pénalité (mode canadien)</Label>
-                        <Input type="number" min="0" max="100" step="0.5" value={question.penalty_points} onChange={(e) => onUpdate({ penalty_points: e.target.value })} />
-                    </div>
+                    {gradingSystem === 'canadien' && (
+                        <div>
+                            <Label className="mb-1.5 block">Pénalité (mode canadien)</Label>
+                            <Input type="number" min="0" max="100" step="0.5" value={question.penalty_points} onChange={(e) => onUpdate({ penalty_points: e.target.value })} />
+                        </div>
+                    )}
                 </div>
 
                 <div>
@@ -537,5 +594,134 @@ function QuestionCard({ index, question, onRemove, onUpdate, onUpdateAnswer, onS
                 </div>
             </CardContent>
         </Card>
+    );
+}
+
+function RichTextEditor({ content, onChange, placeholder }) {
+    const editor = useEditor({
+        extensions: [
+            StarterKit,
+            Underline,
+            TextAlign.configure({ types: ['heading', 'paragraph'] }),
+            CharacterCount,
+            LinkExtension.configure({ openOnClick: false }),
+        ],
+        content,
+        onUpdate: ({ editor }) => {
+            onChange(editor.getHTML());
+        },
+        editorProps: {
+            attributes: {
+                class: 'min-h-[100px] w-full bg-transparent px-4 py-3 text-sm outline-none focus:ring-0 prose prose-sm dark:prose-invert max-w-none',
+                placeholder: placeholder || ''
+            },
+        },
+    });
+
+    if (!editor) return null;
+
+    const toggleLink = () => {
+        const previousUrl = editor.getAttributes('link').href;
+        if (previousUrl) {
+            editor.chain().focus().unsetLink().run();
+            return;
+        }
+        const url = window.prompt('URL du lien:', '');
+        if (url === null) return;
+        if (url === '') {
+            editor.chain().focus().unsetLink().run();
+            return;
+        }
+        editor.chain().focus().setLink({ href: url }).run();
+    };
+
+    const ToolbarButton = ({ onClick, isActive, disabled, children }) => (
+        <button
+            type="button"
+            onClick={onClick}
+            disabled={disabled}
+            className={`p-1.5 rounded-md flex items-center justify-center transition-colors disabled:opacity-50
+                ${isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted-foreground/20'}`}
+        >
+            {children}
+        </button>
+    );
+
+    return (
+        <div className="border border-input rounded-md overflow-hidden bg-background">
+            <div className="bg-muted/50 px-2 py-2 flex items-center gap-1 border-b border-input flex-wrap">
+                <Select
+                    value={editor.isActive('heading', { level: 1 }) ? 'h1' : editor.isActive('heading', { level: 2 }) ? 'h2' : editor.isActive('heading', { level: 3 }) ? 'h3' : 'p'}
+                    onValueChange={(val) => {
+                        if (val === 'p') editor.chain().focus().setParagraph().run();
+                        else if (val === 'h1') editor.chain().focus().toggleHeading({ level: 1 }).run();
+                        else if (val === 'h2') editor.chain().focus().toggleHeading({ level: 2 }).run();
+                        else if (val === 'h3') editor.chain().focus().toggleHeading({ level: 3 }).run();
+                    }}
+                >
+                    <SelectTrigger className="w-32 h-8 text-xs">
+                        <SelectValue placeholder="Format" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="p">Paragraph</SelectItem>
+                        <SelectItem value="h1">Heading 1</SelectItem>
+                        <SelectItem value="h2">Heading 2</SelectItem>
+                        <SelectItem value="h3">Heading 3</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <div className="w-px h-6 bg-border mx-1" />
+                
+                <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive('bold')}>
+                    <Bold className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().toggleItalic().run()} isActive={editor.isActive('italic')}>
+                    <Italic className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} isActive={editor.isActive('underline')}>
+                    <UnderlineIcon className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive('strike')}>
+                    <Strikethrough className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().toggleCode().run()} isActive={editor.isActive('code')}>
+                    <Code className="w-4 h-4" />
+                </ToolbarButton>
+
+                <div className="w-px h-6 bg-border mx-1" />
+
+                <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('left').run()} isActive={editor.isActive({ textAlign: 'left' })}>
+                    <AlignLeft className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('center').run()} isActive={editor.isActive({ textAlign: 'center' })}>
+                    <AlignCenter className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('right').run()} isActive={editor.isActive({ textAlign: 'right' })}>
+                    <AlignRight className="w-4 h-4" />
+                </ToolbarButton>
+
+                <div className="w-px h-6 bg-border mx-1" />
+
+                <ToolbarButton onClick={toggleLink} isActive={editor.isActive('link')}>
+                    <LinkIcon className="w-4 h-4" />
+                </ToolbarButton>
+
+                <div className="flex-1" />
+
+                <ToolbarButton onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}>
+                    <Undo className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}>
+                    <Redo className="w-4 h-4" />
+                </ToolbarButton>
+                <ToolbarButton onClick={() => editor.chain().focus().clearNodes().unsetAllMarks().run()}>
+                    <Eraser className="w-4 h-4" />
+                </ToolbarButton>
+            </div>
+            <EditorContent editor={editor} className="cursor-text" onClick={() => editor.commands.focus()} />
+            <div className="bg-muted/30 px-3 py-1.5 border-t border-input text-xs text-muted-foreground flex justify-between items-center">
+                <span>{editor.storage.characterCount.characters()} characters | {editor.storage.characterCount.words()} words</span>
+            </div>
+        </div>
     );
 }

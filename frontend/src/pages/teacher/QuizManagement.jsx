@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
 import { teacherQuizApi, deriveQuizStatus, QUIZ_STATUS, getSubject } from '@/api/teacherService';
-import { Plus, Search, Eye, Pencil, Trash2, FileQuestion, Calendar } from 'lucide-react';
+import { Plus, Search, Pencil, Trash2, FileQuestion, Calendar, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 
 const TABS = [
     { key: 'tous', label: 'Tous' },
-    { key: 'actif', label: 'Actif' },
-    { key: 'brouillon', label: 'Brouillon' },
-    { key: 'expire', label: 'Expiré' },
+    { key: 'actif', label: 'Actifs' },
+    { key: 'planifie', label: 'Planifiés' },
+    { key: 'brouillon', label: 'Brouillons' },
+    { key: 'expire', label: 'Expirés' },
 ];
 
 export default function QuizManagement() {
@@ -23,6 +24,7 @@ export default function QuizManagement() {
     const [tab, setTab] = useState('tous');
     const [search, setSearch] = useState('');
     const [deletingId, setDeletingId] = useState(null);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
     useEffect(() => {
         let active = true;
@@ -41,7 +43,7 @@ export default function QuizManagement() {
     }, []);
 
     const counts = useMemo(() => {
-        const c = { tous: quizzes.length, actif: 0, brouillon: 0, expire: 0 };
+        const c = { tous: quizzes.length, actif: 0, planifie: 0, brouillon: 0, expire: 0 };
         quizzes.forEach((q) => { c[deriveQuizStatus(q)] += 1; });
         return c;
     }, [quizzes]);
@@ -53,6 +55,47 @@ export default function QuizManagement() {
             return matchTab && matchSearch;
         })
     ), [quizzes, tab, search]);
+
+    const sortedQuizzes = useMemo(() => {
+        let sortableItems = [...filtered];
+        if (sortConfig.key !== null) {
+            sortableItems.sort((a, b) => {
+                let aValue = a[sortConfig.key];
+                let bValue = b[sortConfig.key];
+
+                if (sortConfig.key === 'status') {
+                    aValue = deriveQuizStatus(a);
+                    bValue = deriveQuizStatus(b);
+                }
+
+                if (aValue === null) aValue = '';
+                if (bValue === null) bValue = '';
+
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [filtered, sortConfig]);
+
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortIcon = (columnKey) => {
+        if (sortConfig.key !== columnKey) return <ArrowUpDown className="w-4 h-4 ml-1 opacity-50" />;
+        if (sortConfig.direction === 'asc') return <ArrowUp className="w-4 h-4 ml-1" />;
+        return <ArrowDown className="w-4 h-4 ml-1" />;
+    };
 
     const handleDelete = async (quiz) => {
         if (!window.confirm(`Supprimer le quiz « ${quiz.title} » et toutes ses données ?`)) return;
@@ -117,18 +160,26 @@ export default function QuizManagement() {
                     <table className="w-full text-sm text-left">
                         <thead className="text-xs text-muted-foreground uppercase bg-muted/30">
                             <tr>
-                                <th className="px-6 py-4 font-semibold">Titre &amp; Matière</th>
-                                <th className="px-6 py-4 font-semibold">Questions</th>
-                                <th className="px-6 py-4 font-semibold">Clôture</th>
-                                <th className="px-6 py-4 font-semibold">Statut</th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestSort('title')}>
+                                    <div className="flex items-center">Titre &amp; Matière {getSortIcon('title')}</div>
+                                </th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestSort('questions_count')}>
+                                    <div className="flex items-center">Questions {getSortIcon('questions_count')}</div>
+                                </th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestSort('expires_at')}>
+                                    <div className="flex items-center">Clôture {getSortIcon('expires_at')}</div>
+                                </th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestSort('status')}>
+                                    <div className="flex items-center">Statut {getSortIcon('status')}</div>
+                                </th>
                                 <th className="px-6 py-4 font-semibold text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                            {filtered.length === 0 ? (
+                            {sortedQuizzes.length === 0 ? (
                                 <tr><td colSpan="5" className="px-6 py-12 text-center text-muted-foreground font-medium">Aucun quiz dans cette catégorie.</td></tr>
                             ) : (
-                                filtered.map((quiz) => {
+                                sortedQuizzes.map((quiz) => {
                                     const meta = QUIZ_STATUS[deriveQuizStatus(quiz)];
                                     return (
                                         <tr key={quiz.id} className="hover:bg-muted/30 transition-colors">
@@ -156,9 +207,6 @@ export default function QuizManagement() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center justify-end gap-1">
-                                                    <button onClick={() => navigate(`/teacher/quizzes/${quiz.id}`)} className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Voir">
-                                                        <Eye className="w-4 h-4" />
-                                                    </button>
                                                     <button onClick={() => navigate(`/teacher/quizzes/${quiz.id}/edit`)} className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors" title="Modifier">
                                                         <Pencil className="w-4 h-4" />
                                                     </button>

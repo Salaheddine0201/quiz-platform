@@ -12,7 +12,12 @@ class Quiz extends Model
     const GRADING_STANDARD = 'standard';
     const GRADING_CANADIEN = 'canadien';
 
-    protected $fillable = ['title', 'description', 'duration_minutes', 'expires_at', 'grading_system', 'user_id'];
+    protected $fillable = ['title', 'description', 'duration_minutes', 'starts_at', 'expires_at', 'grading_system', 'user_id'];
+
+    protected $casts = [
+        'starts_at' => 'datetime',
+        'expires_at' => 'datetime',
+    ];
 
     public function user() {
         return $this->belongsTo(User::class, 'user_id');

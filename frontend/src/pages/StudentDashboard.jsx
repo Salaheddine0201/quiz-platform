@@ -218,6 +218,10 @@ export default function StudentDashboard() {
                                             <span className="shrink-0 inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
                                                 En cours
                                             </span>
+                                        ) : quiz.status === 'planifie' ? (
+                                            <span className="shrink-0 inline-flex items-center rounded-full bg-warning/10 px-2.5 py-0.5 text-xs font-semibold text-warning">
+                                                Planifié
+                                            </span>
                                         ) : (
                                             <span className="shrink-0 inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
                                                 En attente
@@ -234,6 +238,12 @@ export default function StudentDashboard() {
                                             {quiz.questions_count} Qs
                                         </div>
                                     </div>
+                                    {quiz.starts_at && (
+                                        <div className="flex items-center gap-1.5 text-sm font-medium text-warning mb-2 bg-warning/10 px-2.5 py-1 rounded-md self-start">
+                                            <Calendar className="w-4 h-4" />
+                                            Ouvre le {formatDate(quiz.starts_at)}
+                                        </div>
+                                    )}
                                     {quiz.expires_at && (
                                         <div className="flex items-center gap-1.5 text-sm font-medium text-destructive mb-6 bg-destructive/10 px-2.5 py-1 rounded-md self-start">
                                             <Calendar className="w-4 h-4" />
@@ -244,9 +254,10 @@ export default function StudentDashboard() {
                                         <Button 
                                             className="w-full justify-between group" 
                                             onClick={() => navigate(`/student/quiz/${quiz.id}`)}
+                                            disabled={quiz.status === 'planifie'}
                                         >
-                                            {quiz.status === 'en_cours' ? 'Reprendre' : 'Commencer'}
-                                            <ArrowRight className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />
+                                            {quiz.status === 'en_cours' ? 'Reprendre' : quiz.status === 'planifie' ? 'Pas encore ouvert' : 'Commencer'}
+                                            {quiz.status !== 'planifie' && <ArrowRight className="w-4 h-4 opacity-70 group-hover:translate-x-1 transition-transform" />}
                                         </Button>
                                     </div>
                                 </CardContent>

@@ -46,6 +46,8 @@ class QuizController extends Controller
             $status = 'termine';
         } elseif ($session && $session->status === QuizSession::STATUS_EN_COURS) {
             $status = 'en_cours';
+        } elseif ($quiz->starts_at && now()->lessThan($quiz->starts_at)) {
+            $status = 'planifie';
         } elseif ($quiz->expires_at && now()->greaterThan($quiz->expires_at)) {
             $status = 'expire';
         }
@@ -55,6 +57,7 @@ class QuizController extends Controller
             'title' => $quiz->title,
             'description' => $quiz->description,
             'duration_minutes' => $quiz->duration_minutes,
+            'starts_at' => $quiz->starts_at,
             'expires_at' => $quiz->expires_at,
             'grading_system' => $quiz->grading_system,
             'questions_count' => $quiz->questions()->count(),
@@ -81,8 +84,10 @@ class QuizController extends Controller
         }
 
         // RG-09 : Vérifier que le quiz n'est pas expiré
-        if ($quiz->expires_at && now()->greaterThan($quiz->expires_at)) {
-            return response()->json(['message' => 'Ce quiz a expiré.'], 403);
+        if ($quiz->starts_at && now()->lessThan($quiz->starts_at)) {
+            return response()->json(['message' => 'Ce quiz n\'est pas encore commencé.'], 403);
+        } elseif ($quiz->expires_at && now()->greaterThan($quiz->expires_at)) {
+            return response()->json(['message' => 'Ce quiz est expiré.'], 403);
         }
 
         // RG-01 : Vérifier qu'il n'y a pas de session terminée
