@@ -30,7 +30,7 @@ export default function StudentSidebar() {
                 <p className="text-xs font-semibold text-sidebar-foreground/50 mb-4 px-2 uppercase tracking-wider">Menu</p>
                 <nav className="flex flex-col gap-1">
                     <NavLink
-                        to="/student/dashboard"
+                        to="/student-dashboard"
                         className={({ isActive }) =>
                             `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                                 isActive ? 'bg-sidebar-primary text-sidebar-primary-foreground' : 'text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'

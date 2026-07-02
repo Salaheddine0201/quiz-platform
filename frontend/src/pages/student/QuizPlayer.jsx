@@ -96,7 +96,7 @@ export default function QuizPlayer() {
                     <XCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
                     <h2 className="text-xl font-bold text-foreground mb-2">Erreur</h2>
                     <p className="text-muted-foreground mb-6">{error}</p>
-                    <Button onClick={() => navigate('/student/dashboard')}>Retour au tableau de bord</Button>
+                    <Button onClick={() => navigate('/student-dashboard')}>Retour au tableau de bord</Button>
                 </Card>
             </div>
         );
@@ -146,7 +146,7 @@ export default function QuizPlayer() {
                     <Button
                         size="lg"
                         className="w-full h-16 rounded-xl text-lg font-bold shadow-sm"
-                        onClick={() => navigate('/student/dashboard')}
+                        onClick={() => navigate('/student-dashboard')}
                     >
                         Retour au tableau de bord
                     </Button>
