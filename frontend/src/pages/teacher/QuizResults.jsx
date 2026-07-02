@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,7 +71,7 @@ export default function QuizResults() {
         })
     ), [sessions, tab, search]);
 
-    const exportCsv = () => {
+    const exportExcel = () => {
         const header = ['Nom', 'Email', 'Statut', 'Score', 'Total', 'Note /20', 'Pourcentage', 'Terminé le'];
         const rows = sessions.map((s) => [
             s.student?.name ?? '',
@@ -82,16 +83,25 @@ export default function QuizResults() {
             `${s.percentage}%`,
             s.completed_at ?? '',
         ]);
-        const csv = [header, ...rows]
-            .map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(';'))
-            .join('\n');
-        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `resultats-${quiz?.title ?? 'quiz'}.csv`;
-        link.click();
-        URL.revokeObjectURL(url);
+        
+        const worksheet = XLSX.utils.aoa_to_sheet([header, ...rows]);
+        
+        // Ajuster la largeur des colonnes
+        const colWidths = header.map(h => ({ wch: Math.max(10, h.length) }));
+        rows.forEach(row => {
+            row.forEach((cell, i) => {
+                const len = String(cell).length;
+                if (len > (colWidths[i].wch || 10)) {
+                    colWidths[i].wch = len;
+                }
+            });
+        });
+        worksheet['!cols'] = colWidths;
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Résultats');
+        
+        XLSX.writeFile(workbook, `resultats-${quiz?.title ?? 'quiz'}.xlsx`);
     };
 
     if (loading) return <LoadingSkeleton />;
@@ -110,8 +120,8 @@ export default function QuizResults() {
                         <p className="text-muted-foreground">{quiz?.title} · {sessions.length} participation(s)</p>
                     </div>
                 </div>
-                <Button variant="outline" className="gap-2 shrink-0" onClick={exportCsv} disabled={sessions.length === 0}>
-                    <Download className="w-4 h-4" /> Exporter CSV
+                <Button variant="outline" className="gap-2 shrink-0" onClick={exportExcel} disabled={sessions.length === 0}>
+                    <Download className="w-4 h-4" /> Exporter Excel
                 </Button>
             </div>
 

@@ -5,10 +5,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
 import { teacherDashboardApi, deriveQuizStatus } from '@/api/teacherService';
-import { BookOpen, GraduationCap, CheckCircle2, TrendingUp, Plus, ArrowRight } from 'lucide-react';
+import { BookOpen, GraduationCap, CheckCircle2, TrendingUp, Plus, ArrowRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 
 const DONUT = {
     actif: { label: 'Actifs', color: 'hsl(var(--success))' },
+    planifie: { label: 'Planifiés', color: 'hsl(var(--warning))' },
     expire: { label: 'Expirés', color: 'hsl(var(--destructive))' },
     brouillon: { label: 'Brouillons', color: 'hsl(var(--muted-foreground))' },
 };
@@ -20,6 +21,7 @@ export default function TeacherDashboard() {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [recentSort, setRecentSort] = useState({ key: null, direction: 'asc' });
 
     useEffect(() => {
         let active = true;
@@ -58,22 +60,52 @@ export default function TeacherDashboard() {
 
     const maxScore = useMemo(() => Math.max(10, ...barData.map((b) => b.score)), [barData]);
 
+    const stats = data?.stats ?? {};
+    const quizzes = data?.quizzes ?? [];
+    const recentSessions = data?.recent_sessions ?? [];
+    const activeCount = quizzes.filter((q) => deriveQuizStatus(q) === 'actif').length;
+
     const donutData = useMemo(() => {
         const quizzes = data?.quizzes ?? [];
-        const counts = { actif: 0, expire: 0, brouillon: 0 };
+        const counts = { actif: 0, planifie: 0, expire: 0, brouillon: 0 };
         quizzes.forEach((q) => { counts[deriveQuizStatus(q)] += 1; });
         return Object.entries(counts)
             .filter(([, value]) => value > 0)
             .map(([key, value]) => ({ key, value, ...DONUT[key] }));
     }, [data]);
 
+    const sortedRecentSessions = useMemo(() => {
+        let sortableItems = [...recentSessions];
+        if (recentSort.key !== null) {
+            sortableItems.sort((a, b) => {
+                let aValue = a[recentSort.key];
+                let bValue = b[recentSort.key];
+                
+                if (aValue === null) aValue = '';
+                if (bValue === null) bValue = '';
+                
+                if (aValue < bValue) return recentSort.direction === 'asc' ? -1 : 1;
+                if (aValue > bValue) return recentSort.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [recentSessions, recentSort]);
+
     if (loading) return <LoadingSkeleton />;
     if (error) return <div className="text-destructive text-center p-4">{error}</div>;
 
-    const stats = data?.stats ?? {};
-    const quizzes = data?.quizzes ?? [];
-    const recentSessions = data?.recent_sessions ?? [];
-    const activeCount = quizzes.filter((q) => deriveQuizStatus(q) === 'actif').length;
+    const requestRecentSort = (key) => {
+        let direction = 'asc';
+        if (recentSort.key === key && recentSort.direction === 'asc') direction = 'desc';
+        setRecentSort({ key, direction });
+    };
+
+    const getRecentSortIcon = (columnKey) => {
+        if (recentSort.key !== columnKey) return <ArrowUpDown className="w-4 h-4 ml-1 opacity-50" />;
+        if (recentSort.direction === 'asc') return <ArrowUp className="w-4 h-4 ml-1" />;
+        return <ArrowDown className="w-4 h-4 ml-1" />;
+    };
 
     // Classes Tailwind écrites en entier (le scanner ne détecte pas les classes dynamiques).
     const cards = [
@@ -189,17 +221,25 @@ export default function TeacherDashboard() {
                     <table className="w-full text-sm text-left">
                         <thead className="text-xs text-muted-foreground uppercase bg-muted/30">
                             <tr>
-                                <th className="px-6 py-4 font-semibold">Étudiant</th>
-                                <th className="px-6 py-4 font-semibold">Quiz</th>
-                                <th className="px-6 py-4 font-semibold">Terminé le</th>
-                                <th className="px-6 py-4 font-semibold text-right">Score (pts)</th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestRecentSort('student_name')}>
+                                    <div className="flex items-center">Étudiant {getRecentSortIcon('student_name')}</div>
+                                </th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestRecentSort('quiz_title')}>
+                                    <div className="flex items-center">Quiz {getRecentSortIcon('quiz_title')}</div>
+                                </th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-muted/50 transition-colors" onClick={() => requestRecentSort('completed_at')}>
+                                    <div className="flex items-center">Terminé le {getRecentSortIcon('completed_at')}</div>
+                                </th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer hover:bg-muted/50 transition-colors text-right" onClick={() => requestRecentSort('score')}>
+                                    <div className="flex items-center justify-end">Score (pts) {getRecentSortIcon('score')}</div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
-                            {recentSessions.length === 0 ? (
+                            {sortedRecentSessions.length === 0 ? (
                                 <tr><td colSpan="4" className="px-6 py-8 text-center text-muted-foreground font-medium">Aucune session terminée.</td></tr>
                             ) : (
-                                recentSessions.map((s) => (
+                                sortedRecentSessions.map((s) => (
                                     <tr key={s.session_id} className="hover:bg-muted/30 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="font-semibold text-foreground">{s.student_name}</div>

@@ -57,13 +57,19 @@ class DashboardController extends Controller
             })
             ->map(function ($quiz) use ($inProgressSessions) {
                 // Statut virtuel calculé dynamiquement (Q3)
-                $status = in_array($quiz->id, $inProgressSessions) ? 'en_cours' : 'en_attente';
+                $status = 'en_attente';
+                if ($quiz->starts_at && now()->lessThan($quiz->starts_at)) {
+                    $status = 'planifie';
+                } elseif (in_array($quiz->id, $inProgressSessions)) {
+                    $status = 'en_cours';
+                }
 
                 return [
                     'id' => $quiz->id,
                     'title' => $quiz->title,
                     'description' => $quiz->description,
                     'duration_minutes' => $quiz->duration_minutes,
+                    'starts_at' => $quiz->starts_at,
                     'expires_at' => $quiz->expires_at,
                     'questions_count' => $quiz->questions->count(),
                     'status' => $status,

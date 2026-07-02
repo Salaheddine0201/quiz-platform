@@ -1,6 +1,6 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, BookOpen, BarChart3, Plus, LogOut } from 'lucide-react';
+import { NavLink, useNavigate, Link } from 'react-router-dom';
+import { LayoutDashboard, BookOpen, BarChart3, Plus, LogOut, GraduationCap } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const NAV = [
@@ -21,17 +21,15 @@ export default function TeacherSidebar() {
     return (
         <aside className="dark w-64 flex-shrink-0 flex flex-col h-screen sticky top-0 bg-sidebar text-sidebar-foreground">
             {/* Logo area */}
-            <div className="h-16 flex items-center px-6 gap-3 pt-6 pb-4">
+            <Link to="/" className="h-16 flex items-center px-6 gap-3 pt-6 pb-4 hover:opacity-80 transition-opacity">
                 <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center text-sidebar-primary-foreground font-bold shrink-0">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-5 h-5" strokeWidth="2">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
-                    </svg>
+                    <GraduationCap className="w-5 h-5" />
                 </div>
                 <div>
-                    <h1 className="font-bold text-base leading-tight">PT58 Quiz</h1>
+                    <h1 className="font-bold text-base leading-tight">Portail Scolaire</h1>
                     <p className="text-xs text-sidebar-foreground/70">Espace Enseignant</p>
                 </div>
-            </div>
+            </Link>
 
             {/* New Quiz CTA */}
             <div className="px-4 mt-2">
