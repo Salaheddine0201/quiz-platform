@@ -106,9 +106,9 @@ class QuizController extends Controller
             'assigned_count' => $quiz->assigned_users_count ?? $quiz->assignedUsers()->count(),
             'sessions_count' => $quiz->quiz_sessions_count ?? $quiz->quizSessions()->count(),
             'is_expired' => $quiz->expires_at && now()->greaterThan($quiz->expires_at),
-            'created_at' => $quiz->created_at->toDateTimeString(),
-            'updated_at' => $quiz->updated_at->toDateTimeString(),
-        ];
+'created_at' => $quiz->created_at?->toDateTimeString(),
+'updated_at' => $quiz->updated_at?->toDateTimeString(),   
+     ];
     }
 
     private function formatQuizDetail(Quiz $quiz): array
@@ -135,8 +135,8 @@ class QuizController extends Controller
                     'is_correct' => $answer->is_correct,
                 ]),
             ]),
-            'created_at' => $quiz->created_at->toDateTimeString(),
-            'updated_at' => $quiz->updated_at->toDateTimeString(),
+            'created_at' => $quiz->created_at?->toDateTimeString(),
+            'updated_at' => $quiz->updated_at?->toDateTimeString(),
         ];
     }
 }

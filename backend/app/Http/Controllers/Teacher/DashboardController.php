@@ -40,7 +40,7 @@ class DashboardController extends Controller
                 'student_name' => $session->user->name,
                 'student_email' => $session->user->email,
                 'score' => $session->score,
-                'completed_at' => $session->updated_at->toDateTimeString(),
+                'completed_at' => $session->updated_at?->toDateTimeString(),
             ])
             ->values();
 
@@ -55,7 +55,7 @@ class DashboardController extends Controller
             'assigned_count' => $quiz->assigned_users_count,
             'sessions_count' => $quiz->quiz_sessions_count,
             'is_expired' => $quiz->expires_at && now()->greaterThan($quiz->expires_at),
-            'created_at' => $quiz->created_at->toDateTimeString(),
+            'created_at' => $quiz->created_at?->toDateTimeString(),
         ]);
 
         return response()->json([
