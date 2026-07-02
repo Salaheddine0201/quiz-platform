@@ -5,26 +5,14 @@ import { Input } from '@/components/ui/input';
 import { Search, TrendingUp, CheckCircle2, Award, XCircle, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import LoadingSkeleton from '@/components/ui/LoadingSkeleton';
+import ResultDetailsDrawer from '@/components/student/ResultDetailsDrawer';
 
 export default function ResultsList() {
     const { data, loading, error } = useStudentResults();
     const [searchTerm, setSearchTerm] = useState('');
-    const [showSort, setShowSort] = useState(false);
-    const [sortOption, setSortOption] = useState('date_desc');
+    const [sortConfig, setSortConfig] = useState({ key: 'completed_at', direction: 'desc' });
+    const [selectedResultId, setSelectedResultId] = useState(null);
     const navigate = useNavigate();
-    const sortMenuRef = useRef(null);
-
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (sortMenuRef.current && !sortMenuRef.current.contains(event.target)) {
-                setShowSort(false);
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
 
     useEffect(() => {
         console.log("=== COMPONENT MOUNTED : ResultsList ===");
@@ -71,21 +59,50 @@ export default function ResultsList() {
 
 
 
+    const handleSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortIcon = (key) => {
+        if (sortConfig.key !== key) {
+            return <ArrowUpDown className="w-4 h-4 ml-1 opacity-20 group-hover:opacity-100 transition-opacity inline" />;
+        }
+        return sortConfig.direction === 'asc' ? <ArrowUp className="w-4 h-4 ml-1 text-primary inline" /> : <ArrowDown className="w-4 h-4 ml-1 text-primary inline" />;
+    };
+
     const filteredAndSortedResults = results
         .filter(r => {
             if (!searchTerm) return true;
-            return r.quiz_title.toLowerCase().startsWith(searchTerm.toLowerCase());
+            return r.quiz_title.toLowerCase().includes(searchTerm.toLowerCase());
         })
         .sort((a, b) => {
-            const dateA = new Date(a.completed_at).getTime();
-            const dateB = new Date(b.completed_at).getTime();
-            switch (sortOption) {
-                case 'date_desc': return dateB - dateA;
-                case 'date_asc': return dateA - dateB;
-                case 'note_desc': return b.score_on_20 - a.score_on_20;
-                case 'note_asc': return a.score_on_20 - b.score_on_20;
-                default: return 0;
+            const { key, direction } = sortConfig;
+            let valA, valB;
+            
+            if (key === 'subject') {
+                valA = getSubject(a.quiz_title).toLowerCase();
+                valB = getSubject(b.quiz_title).toLowerCase();
+            } else if (key === 'completed_at') {
+                valA = new Date(a.completed_at).getTime();
+                valB = new Date(b.completed_at).getTime();
+            } else if (key === 'score_on_20') {
+                valA = parseFloat(a.score_on_20 ?? a.score) || 0;
+                valB = parseFloat(b.score_on_20 ?? b.score) || 0;
+            } else if (key === 'result') {
+                valA = (parseFloat(a.score_on_20 ?? a.score) || 0) >= 10 ? 1 : 0;
+                valB = (parseFloat(b.score_on_20 ?? b.score) || 0) >= 10 ? 1 : 0;
+            } else {
+                valA = (a[key] || '').toLowerCase();
+                valB = (b[key] || '').toLowerCase();
             }
+            
+            if (valA < valB) return direction === 'asc' ? -1 : 1;
+            if (valA > valB) return direction === 'asc' ? 1 : -1;
+            return 0;
         });
 
     return (
@@ -154,45 +171,34 @@ export default function ResultsList() {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <div className="relative flex items-center gap-2" ref={sortMenuRef}>
-                            <button 
-                                onClick={() => setShowSort(!showSort)}
-                                className={`p-2 h-9 border rounded-md transition-colors ${showSort ? 'bg-primary/10 border-primary/20 text-primary' : 'border-border hover:bg-muted text-muted-foreground'} flex items-center justify-center`}
-                                title="Options de tri"
-                            >
-                                <ArrowUpDown className={`w-4 h-4 transition-transform duration-300 ${sortOption.includes('desc') ? 'rotate-180' : 'rotate-0'}`} />
-                            </button>
-                            {showSort && (
-                                <div className="absolute right-0 top-11 z-50 w-48 bg-card border border-border shadow-lg rounded-md overflow-hidden animate-in slide-in-from-top-2">
-                                    <div className="px-3 py-2 text-xs font-semibold text-muted-foreground bg-muted/30 border-b border-border">Trier par</div>
-                                    <div className="p-1 flex flex-col">
-                                        <button onClick={() => { setSortOption('date_desc'); setShowSort(false); }} className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${sortOption === 'date_desc' ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-muted text-foreground'}`}>Date la plus récente</button>
-                                        <button onClick={() => { setSortOption('date_asc'); setShowSort(false); }} className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${sortOption === 'date_asc' ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-muted text-foreground'}`}>Date la plus ancienne</button>
-                                        <div className="h-px bg-border my-1" />
-                                        <button onClick={() => { setSortOption('note_desc'); setShowSort(false); }} className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${sortOption === 'note_desc' ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-muted text-foreground'}`}>Note décroissante</button>
-                                        <button onClick={() => { setSortOption('note_asc'); setShowSort(false); }} className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${sortOption === 'note_asc' ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-muted text-foreground'}`}>Note croissante</button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
                     </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-muted-foreground uppercase bg-muted/50">
+                        <thead className="text-xs text-muted-foreground uppercase bg-muted/30 select-none">
                             <tr>
-                                <th className="px-6 py-3 font-semibold">#</th>
-                                <th className="px-6 py-3 font-semibold">QUIZ</th>
-                                <th className="px-6 py-3 font-semibold">MATIÈRE</th>
-                                <th className="px-6 py-3 font-semibold">DATE</th>
-                                <th className="px-6 py-3 font-semibold">RÉSULTAT</th>
-                                <th className="px-6 py-3 font-semibold text-right">NOTE</th>
+                                <th className="px-6 py-4 font-semibold">#</th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer group hover:bg-muted/50 transition-colors" onClick={() => handleSort('quiz_title')}>
+                                    <div className="flex items-center">QUIZ {getSortIcon('quiz_title')}</div>
+                                </th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer group hover:bg-muted/50 transition-colors" onClick={() => handleSort('subject')}>
+                                    <div className="flex items-center">MATIÈRE {getSortIcon('subject')}</div>
+                                </th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer group hover:bg-muted/50 transition-colors" onClick={() => handleSort('completed_at')}>
+                                    <div className="flex items-center">DATE {getSortIcon('completed_at')}</div>
+                                </th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer group hover:bg-muted/50 transition-colors" onClick={() => handleSort('result')}>
+                                    <div className="flex items-center">RÉSULTAT {getSortIcon('result')}</div>
+                                </th>
+                                <th className="px-6 py-4 font-semibold cursor-pointer group hover:bg-muted/50 transition-colors text-right" onClick={() => handleSort('score_on_20')}>
+                                    <div className="flex items-center justify-end">NOTE {getSortIcon('score_on_20')}</div>
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border">
                             {results.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-8 text-center text-muted-foreground font-medium">Vous n’avez passé aucun quiz pour le moment</td>
+                                    <td colSpan="6" className="px-6 py-8 text-center text-muted-foreground font-medium">Vous n'avez passé aucun quiz pour le moment</td>
                                 </tr>
                             ) : filteredAndSortedResults.length === 0 ? (
                                 <tr>
@@ -200,32 +206,38 @@ export default function ResultsList() {
                                 </tr>
                             ) : (
                                 filteredAndSortedResults.map((result, idx) => {
-                                    const isPassed = result.result === 'Réussi';
+                                    const scoreOn20 = result.score_on_20 ?? result.score;
+                                    const isPassed = scoreOn20 >= 10;
+                                    const resultLabel = isPassed ? 'Réussi' : 'Insuffisant';
                                     
                                     return (
-                                        <tr key={result.id} className="hover:bg-muted/30 transition-colors">
-                                            <td className="px-6 py-3 font-semibold text-muted-foreground">{String(idx + 1).padStart(2, '0')}</td>
-                                            <td className="px-6 py-3 font-bold text-foreground">{result.quiz_title}</td>
-                                            <td className="px-6 py-3 text-muted-foreground font-medium">{getSubject(result.quiz_title)}</td>
-                                            <td className="px-6 py-3 text-muted-foreground font-medium">{formatDate(result.completed_at)}</td>
-                                            <td className="px-6 py-3">
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                                        <tr 
+                                            key={result.id} 
+                                            className="hover:bg-muted/30 transition-colors cursor-pointer"
+                                            onClick={() => setSelectedResultId(result.id)}
+                                        >
+                                            <td className="px-6 py-4 font-bold text-foreground">{String(idx + 1).padStart(2, '0')}</td>
+                                            <td className="px-6 py-4 font-semibold text-foreground">{result.quiz_title}</td>
+                                            <td className="px-6 py-4 text-muted-foreground font-medium">{getSubject(result.quiz_title)}</td>
+                                            <td className="px-6 py-4 text-muted-foreground font-medium">{formatDate(result.completed_at)}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
                                                     isPassed 
                                                     ? 'bg-success/10 text-success' 
                                                     : 'bg-destructive/10 text-destructive'
                                                 }`}>
-                                                    {result.result}
+                                                    {resultLabel}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-3">
-                                                <div className="flex items-center gap-1 font-bold justify-end">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center justify-end gap-1.5 font-bold">
                                                     {isPassed ? (
                                                         <CheckCircle2 className="w-4 h-4 text-success" />
                                                     ) : (
                                                         <XCircle className="w-4 h-4 text-destructive" />
                                                     )}
                                                     <span className={isPassed ? 'text-success' : 'text-destructive'}>
-                                                        {result.score_on_20}
+                                                        {scoreOn20}
                                                     </span>
                                                     <span className="text-muted-foreground font-semibold">/20</span>
                                                 </div>
@@ -238,6 +250,11 @@ export default function ResultsList() {
                     </table>
                 </div>
             </Card>
+
+            <ResultDetailsDrawer 
+                sessionId={selectedResultId} 
+                onClose={() => setSelectedResultId(null)} 
+            />
         </div>
     );
 }
