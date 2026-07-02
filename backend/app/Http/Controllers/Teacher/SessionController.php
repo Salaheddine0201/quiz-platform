@@ -126,10 +126,10 @@ class SessionController extends Controller
             'result' => $session->status === QuizSession::STATUS_TERMINE
                 ? ($scoreOn20 >= 10 ? 'Réussi' : 'Insuffisant')
                 : null,
-            'started_at' => $session->started_at->toDateTimeString(),
-            'completed_at' => $session->status === QuizSession::STATUS_TERMINE
-                ? $session->updated_at->toDateTimeString()
-                : null,
+            'started_at' => $session->started_at?->toDateTimeString(),
+'completed_at' => $session->status === QuizSession::STATUS_TERMINE
+    ? $session->updated_at?->toDateTimeString()
+    : null,
         ];
     }
 }

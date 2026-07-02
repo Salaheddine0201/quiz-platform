@@ -27,7 +27,7 @@ class AssignmentController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'assigned_at' => $user->pivot->created_at->toDateTimeString(),
+                'assigned_at' => $user->pivot->created_at?->toDateTimeString(),
             ]);
 
         return response()->json(['assignments' => $students]);
@@ -80,7 +80,7 @@ class AssignmentController extends Controller
                 'id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'assigned_at' => $user->pivot->created_at->toDateTimeString(),
+                'assigned_at' => $user->pivot->created_at?->toDateTimeString(),
             ]);
 
         return response()->json([

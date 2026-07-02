@@ -49,6 +49,65 @@ export const teacherSessionApi = {
     },
 };
 
+/* Questions (l'éditeur envoie la question avec son tableau `answers`) */
+export const teacherQuestionApi = {
+    addQuestion: async (quizId, payload) => {
+        const { data } = await api.post(`/teacher/quizzes/${quizId}/questions`, payload);
+        return data;
+    },
+    updateQuestion: async (questionId, payload) => {
+        const { data } = await api.put(`/teacher/questions/${questionId}`, payload);
+        return data;
+    },
+    deleteQuestion: async (questionId) => {
+        const { data } = await api.delete(`/teacher/questions/${questionId}`);
+        return data;
+    },
+};
+
+/* Réponses (utilisé pour l'édition fine d'une réponse existante) */
+export const teacherAnswerApi = {
+    addAnswer: async (questionId, payload) => {
+        const { data } = await api.post(`/teacher/questions/${questionId}/answers`, payload);
+        return data;
+    },
+    updateAnswer: async (answerId, payload) => {
+        const { data } = await api.put(`/teacher/answers/${answerId}`, payload);
+        return data;
+    },
+    deleteAnswer: async (answerId) => {
+        const { data } = await api.delete(`/teacher/answers/${answerId}`);
+        return data;
+    },
+};
+
+/* Affectation des étudiants */
+export const teacherAssignmentApi = {
+    getAssignments: async (quizId) => {
+        const { data } = await api.get(`/teacher/quizzes/${quizId}/assignments`);
+        return data;
+    },
+    assignStudents: async (quizId, userIds) => {
+        const { data } = await api.post(`/teacher/quizzes/${quizId}/assignments`, { user_ids: userIds });
+        return data;
+    },
+    removeAssignment: async (quizId, userId) => {
+        const { data } = await api.delete(`/teacher/quizzes/${quizId}/assignments/${userId}`);
+        return data;
+    },
+};
+
+/* Recherche d'étudiants (pour la double-liste d'affectation) */
+export const teacherStudentApi = {
+    searchStudents: async ({ search = '', quizId = null } = {}) => {
+        const params = {};
+        if (search) params.search = search;
+        if (quizId) params.quiz_id = quizId;
+        const { data } = await api.get('/teacher/students', { params });
+        return data;
+    },
+};
+
 /* ============================================================
  *  STATUT D'UN QUIZ (logique métier côté front)
  *
